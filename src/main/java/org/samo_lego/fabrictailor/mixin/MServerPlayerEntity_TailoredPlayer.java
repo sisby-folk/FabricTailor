@@ -34,6 +34,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.samo_lego.fabrictailor.casts.TailoredGameProfile;
 import org.samo_lego.fabrictailor.casts.TailoredPlayer;
 import org.samo_lego.fabrictailor.mixin.accessors.AChunkMap;
 import org.samo_lego.fabrictailor.mixin.accessors.AServerPlayer;
@@ -43,7 +44,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
@@ -57,15 +57,10 @@ import static org.samo_lego.fabrictailor.mixin.accessors.AAvatar.getPLAYER_MODEL
 
 @Mixin(ServerPlayer.class)
 public abstract class MServerPlayerEntity_TailoredPlayer extends Player implements TailoredPlayer {
-
     @Unique
     private static final String STEVE = "MHF_STEVE";
     @Unique
     private final ServerPlayer self = (ServerPlayer) (Object) this;
-    @Unique
-    private final GameProfile gameProfile = self.getGameProfile();
-    @Unique
-    private final PropertyMap map = this.gameProfile.properties();
     @Shadow
     public ServerGamePacketListenerImpl connection;
 
@@ -177,14 +172,17 @@ public abstract class MServerPlayerEntity_TailoredPlayer extends Player implemen
      * @param reload   whether to send packets around for skin reload
      */
     public void fabrictailor_setSkin(Property skinData, boolean reload) {
+        HashMultimap<String, Property> map = HashMultimap.create(self.getGameProfile().properties());
         try {
-            this.map.removeAll(TailoredPlayer.PROPERTY_TEXTURES);
+            map.removeAll(TailoredPlayer.PROPERTY_TEXTURES);
         } catch (Exception ignored) {
             // Player has no skin data, no worries
         }
 
         try {
-            this.map.put(TailoredPlayer.PROPERTY_TEXTURES, skinData);
+            map.put(TailoredPlayer.PROPERTY_TEXTURES, skinData);
+
+            ((TailoredGameProfile) (Object) self.getGameProfile()).tailor$overrideProperties(new PropertyMap(map));
 
             // Saving skin data
             this.skinValue = skinData.value();
@@ -211,7 +209,7 @@ public abstract class MServerPlayerEntity_TailoredPlayer extends Player implemen
     public Optional<String> fabrictailor_getSkinValue() {
         if (this.skinValue == null) {
             try {
-                Property property = map.get(TailoredPlayer.PROPERTY_TEXTURES).iterator().next();
+                Property property = self.getGameProfile().properties().get(TailoredPlayer.PROPERTY_TEXTURES).iterator().next();
                 this.skinValue = property.value();
             } catch (Exception ignored) {
                 // Player has no skin data, no worries
@@ -225,7 +223,7 @@ public abstract class MServerPlayerEntity_TailoredPlayer extends Player implemen
     public Optional<String> fabrictailor_getSkinSignature() {
         if (this.skinSignature == null) {
             try {
-                Property property = map.get(TailoredPlayer.PROPERTY_TEXTURES).iterator().next();
+                Property property = self.getGameProfile().properties().get(TailoredPlayer.PROPERTY_TEXTURES).iterator().next();
                 this.skinSignature = property.signature();
             } catch (Exception ignored) {
                 // Player has no skin data, no worries
@@ -242,8 +240,10 @@ public abstract class MServerPlayerEntity_TailoredPlayer extends Player implemen
 
     @Override
     public void fabrictailor_clearSkin() {
+        HashMultimap<String, Property> map = HashMultimap.create(self.getGameProfile().properties());
         try {
-            this.map.removeAll(TailoredPlayer.PROPERTY_TEXTURES);
+            map.removeAll(TailoredPlayer.PROPERTY_TEXTURES);
+            ((TailoredGameProfile) (Object) self.getGameProfile()).tailor$overrideProperties(new PropertyMap(map));
             // Ensure that the skin is completely cleared to prevent the save bug.
             this.skinValue = null;
             this.skinSignature = null;

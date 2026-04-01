@@ -17,7 +17,7 @@
     "accessors.AEntitySelector",
     "accessors.AServerPlayer",
     "accessors.ATrackedEntity",
-    "client.MixinPropertyMap"
+    "client.MixinGameProfile"
   ],
   "injectors": {
     "defaultRequire": 1
