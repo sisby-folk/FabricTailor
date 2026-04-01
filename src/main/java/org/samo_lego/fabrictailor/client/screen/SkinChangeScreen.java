@@ -118,7 +118,7 @@ public class SkinChangeScreen extends Screen {
         skinInput.setMaxLength(256);
         skinInput.setVisible(true);
         skinInput.setBordered(true);
-        skinInput.setTextColor(0xFFFFFFFF);
+        skinInput.setTextColor(0xFF_FFFFFF);
         this.addRenderableWidget(skinInput);
 
         // "Set skin" button
@@ -231,7 +231,7 @@ public class SkinChangeScreen extends Screen {
         super.extractRenderState(guiGraphics, mouseX, mouseY, delta);
 
         // Screen title
-        guiGraphics.centeredText(this.font, title, width / 2, 15, -1);
+        guiGraphics.centeredText(this.font, title, width / 2, 15, 0xFF_FFFFFF);
 
         // Starting position of the window texture
         this.startX = (this.width - 252) / 2;
@@ -327,14 +327,18 @@ public class SkinChangeScreen extends Screen {
                 this.openExplorerButton.visible = tab.showExplorerButton();
             }
 
-            tab.getTabType().extractRenderState(guiGraphics, startX, startY, selected, tab.getTabType().getMax() - i - 1);
+            int index = tab.getTabType().getMax() - i - 1;
+            int tabX = startX + tab.getTabType().getX(index);
+            int tabY = startY + tab.getTabType().getY(index);
+
+            tab.getTabType().extractRenderState(guiGraphics, tabX, tabY, selected, index);
         }
 
         // Rendering title
-        guiGraphics.text(this.font, this.selectedTab.getTitle(), startX + 10, startY + 5, 0xFFFFFFFF);
+        guiGraphics.text(this.font, this.selectedTab.getTitle(), startX + 10, startY + 5, 0xFF_FFFFFF);
 
         // Rendering description above input field
-        guiGraphics.text(this.font, this.selectedTab.getDescription(), width / 2, height / 2 - 40, 0xFFFFFFFF);
+        guiGraphics.text(this.font, this.selectedTab.getDescription(), width / 2, height / 2 - 40, 0xFF_FFFFFF);
     }
 
 
